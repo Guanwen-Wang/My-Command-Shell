@@ -1,0 +1,626 @@
+
+=========================================================================================
+
+	    To start with myShell, please first run
+
+  	        ./myShell    or    valgrind ./myShell
+ 
+==========================================================================================
+ 
+	 Then you will see myShell print out the prompt:
+
+                 myShell:/home/gw82/ece551/mp_miniproject$ 
+
+   	 which is correct waiting for user to input.
+
+==========================================================================================
+
+Section 1: Run and exit myShell
+
+	(1) Run: empty input
+
+	Output: myShell:/home/gw82/ece551/mp_miniproject$
+
+	Reason: The output is correct, because when user does not give anything input and
+		just press "Enter" on  keyboard, myShell will just print out a line of new
+		prompt, waiting for user to give next command input.
+
+	(2) Run: exit
+
+	Output: (exit myShell)
+
+	Reason: The output is correct, because when user gives the 'exit' command, myShell
+		has to quit and return back to Terminal original shell.
+
+	(3) Run: (Control + D)
+
+	Output: (exit myShell)
+
+	Reason: The output is correct, because when EOF is encountered when reading
+  		from stdin, the shell should also exit.
+
+	(4) Run: ./myShell
+	    	 ./myShell
+		 exit
+		 exit
+
+	Output: myShell will exit and return back to termianl's shell. The user typed  two
+		times of ./myShell, so myShell opens another myShell inside of itself. So
+		the user has to type two times of 'exit' in order to return back to terminal
+		shell.
+
+	(5) Run: env
+
+	Output: It will pints out all the original environment variables, plus a new added
+		environment variable ECE551PATH in the place of the last line, which is
+
+		ECE551PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
+
+	Reason: The output is correct. Because the new environment variable is asked to be
+		set the same value as "PATH", and it has already been added to the
+		environment.
+		
+
+==========================================================================================
+
+
+Section 2: Testing command
+
+
+	(1) Run: /bin/pwd
+
+	Output: /home/gw82/ece551/mp_miniproject
+		Program exited with status 0
+
+	Reason: The output is correct. Because the command pwd is to get the current working
+		directory. Valgrind for this command is clean.
+
+	(2) Run: /bin/ls
+
+	Output: (You will see a list of all files and directories in the current directory)
+		At the end of all files, there is another instruction line:
+
+		   Program exited with status 0
+
+	Reason: The output is correct. Because when you enter the full path of one certain
+		command, myShell will follow the full path to find the corresponding command
+		and execute it. The exit status in the last line shows the status when the
+		program exited. When the program exits with no errors, the status is defined
+		by macro WEXITSTATUS(status). Valgrind for this command is clean.
+
+	(3) Run: /bin/ls -l
+
+	Output: (You will see a list of all files and directories in the current directory.
+		Instead of just the names of files and directories, it will also shows the
+		specific details of each file or directory, including the access, creater
+		name, size, creating time, ect.)
+
+	Reason: The output is correct. Because myShell parse the input "ls -l" into two
+		parts: first part is command "ls", and second part is the argument "-l".
+		When the myShell execute the command, it will also consider the argument
+		"-l". Valgrind for this command is clean.
+
+	(4) Run: /usr/bin/gcc
+
+	Output: gcc: fatal error: no input files
+		compilation terminated.	   
+		Program exited with status 1
+		
+	Reason: The output is correct. Because myShell execute the programm gcc in /usr/bin.
+		This program requires the inputfile, which is not given in the command before
+		
+		
+	(5) Run: ls
+
+	Output: Same as (2).
+
+	Reason: Because when user types in the single command, myShell will first go to
+		ECE551PATH to find each directory. If it finds the required command, it will
+		add its path to form its full path and execute the command.
+
+	(6) Run:      ls
+
+	Output: Same as (2).
+
+	Reason: Because when user types in many space before or after the command myShell
+		will automatically ignore these blank spaces.
+
+	(7) Run: ls -l
+
+	Output: same as (3)
+
+	Reason: myShell will look for the command in ECE551PATH, and return its full path
+		to execute. Also, myShell will parse the input string in to command and
+		argument. So it will also list out more details about each file.
+
+	(8) Run: ls       -l
+
+	Output: same as (3)
+	
+	Reason: same as (6)
+
+	(9) Run: fg
+
+	Output: Command fg not fount
+		Program exited with status 1
+	
+	Reason: Correct. Because fg is not a built-in command in ECE551PATH. So when the
+		command is not found in this path, it will print the 'commant not found'
+
+	(10) Run: aaa
+
+	Output:  Command aaa not fount
+                 Program exited with status 1
+
+	Reason: same as (9)
+
+	(11) Run: .
+
+	Output: execve: Permission denied
+		Program exited with status 1
+
+	Reason: . is the current working directory, which is not a command to be execuated.
+		So when myShell runs it, the execve function will perror and exit. Then it
+		will print another prompt, waiting for user to type in.
+
+	(12) Run: echo i     like      ece551
+
+	Output: i like ece551
+		Program exited with status 0
+
+	Reason: Correct. myShell will execute the command echo and print out the contents
+		following echo. It will ignore the redundant space between each world.
+
+	(13) Run: echo i\ like\ ece551
+
+	Output: i like ece551
+                Program exited with status 0
+
+	Reason: correct. When the user types in "\ ", which is black-slash space, myShell
+		will ignore the black slash and only prints out the character behind the
+		black slash.
+
+	(14) Run: echo \
+
+	Output:
+		Program exited with status 0
+
+	Reason: correct! There is a blank line above "Program exited with status 0". This
+		is because myShell will only print out the contents behind back slash.
+
+	(15) Run: echo \\
+
+	Output: \
+		Program exited with status 0
+
+	Reason: correct! User types in two back slashes and myShell will only print out
+		one back slash. This is because myShell will only print out the contents
+		behind back slash.
+	
+	(16) Run: echo $ECE551PATH
+
+	output: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
+		Program exited with status 0
+
+	Reason: correct! '$' means the following characters are variable name. And 'PATH' is
+		a variable name in the environment. So when types in the 
+
+	(17) Run: cd
+
+	Output: myShell will print out a new line of prompt:
+
+			myShell:/home/gw82$ 
+
+	Reason: correct. Because when typeing in 'cd', which is not followed by any arguments,
+		myShell will change its directory back to home directory, which is the same
+		output when typing in 'cd' in termianl's shell.
+
+	(18) Run: cd ..
+
+	Output: myShell will print out a new line of prompt:
+
+			myShell:/home/gw82/ece551$
+
+	Reason: correct. Because '..' means the upper level directory of the current working
+		directory. myShell can go to the upper level directory.
+
+	(19) Run: cd
+	     	  cd ece551/
+
+	Output: myShell will print out a new line of prompt:
+
+                        myShell:/home/gw82/ece551$
+
+        Reason: correct. Because myShell can both go upper or go lower to directory.
+
+	(20) Run: cd a
+
+	Output: -bash: No such file or directory
+
+	Reason: correct. because in the current working directory, there is no one directory
+		named "a"
+
+	(21) Run: cd a b
+
+	Output: -bash: cd: too many arguments
+
+	Reason: correct. Because there is one more arguments typed in, and this is the invalid
+		input format for command cd.
+
+	(22) Run: cd ../000_submit
+
+	Output; myShell will print out a new line of prompt:
+
+			myShell:/home/gw82/ece551/000_submit$ 
+
+	Reason: correct. myShell can change to both relative path or full path.
+
+	(23) Run: cd /bin
+
+	Output: myShell will print out a new line of prompt:
+
+			myShell:/bin$
+
+	Reason: correct. myShell can change to both relative path or full path.
+
+
+==========================================================================================
+
+
+Section3: testing variables
+
+	  (1) Run: set
+
+	  Output: lost var name and value
+
+	  Reason: correct. Because for command there must have two arguments, one is the
+	  	  variable name, and the other is the variable value.
+
+	  (2) Run: set a
+
+	  Output: lost var value
+
+	  Reason: corect. Because for command there must have two arguments, one is the
+                  variable name, and the other is the variable value.
+
+	  (3) Run: set v hello
+	      echo $v
+
+	  Output: hello
+	  	  Program exited with status 0
+
+	  Reason: correct. This is because command 'set' has already store the value of
+	  	  a variable. And when 'echo $a', myShell will print out the value of
+		  variable 'a'.
+
+	  (4) Run: set v i really like ece551!
+	       	    echo $v
+
+	   Output: i really lie ece551!
+	   	   Program exited with status 0
+
+	  Reason: correct. The value of a variable can contain anything, including space.
+
+	  (5) Run: set Aa_1 hello
+	      	   echo $Aa_1
+
+	   Output: hello
+		   Program exited with status 0
+
+	   Reason: correct. The name of a variable can only contains 4 tpyes of characters:
+	   	   lower-case alphabet, capital alphabet, numbers, underscore.
+
+	   (6) Run: set a+b hello
+
+	   Output: Invalid variable name!
+
+	   Reason: correct. same as (5)
+
+	   (7) Run: set a.a hello
+
+	   Output: Invalid variable name!
+
+           Reason: correct. same as (5)
+
+	   (8) Run: set a\a hello
+
+	   Output: Invalid variable name!
+
+           Reason: correct. same as (5)
+
+	   (9) Run: set < hello
+	   
+	   Output: Invalid variable name!
+
+	   Reason: correct. same as (5)
+
+	   (10) Run: set v hello, world
+	   	     set v ece551
+	   	     echo $v
+
+	    Output: ece551
+	    	    Program exited with status 0
+
+	    Reason: correct. myShell will store each variable. When a certain variable has been
+	    	    set twice, myShell will automatically overwrite this variable with the newest
+		    value.
+
+	    (11) Run: set PATH hello
+	    	      echo $PATH
+
+	    Output: hello
+	    	    Program exited with status 0
+
+	    Reason: correct. myShell will search for ECE551PATH to look for the command 'echo'.
+	    	    So changing the value of 'PATH' will not affect the execuation of 'echo'.
+
+	    (12) Run: set ECE551PATH hello
+	    	      echo $ECE551PATH
+
+	    Output: Cannot open directory: No such file or directory
+	    	    Program exited with status 1 
+
+ 	    Reason: Correct. myShell will search for ECE551PATH to look for the command 'echo'.
+            	    So changing the value of 'ECE551PATH' will affect the execuation of 'echo'.
+		    The current value of ECE551PATH is 'hello', so there is no directory for
+		    myShell to search for command 'echo'.
+
+	    (13) Run: set a 123
+	    	      ./test_args $a+
+
+	    Output: 123+
+	    	    Program exited with status 0
+
+	    Reason: correct. "test_args" is a simple program in the current working directory to
+	    	    print out all following arguments. Variable a was set to 123, so printing out
+		    $a+ is 123+.
+
+	    (14) Run: set a 123
+	    	      ./test_args $\a
+
+	    Output: 123
+	    	    Program exited with status 0
+
+            Reason: correct. when myShell encounters back-slash('\'), it only cares about the contents
+	    	    followed behind back-slash.
+
+	    (15) Run: set a 123
+	    	      set b 456
+		      ./test_args $a$b
+
+	    Output: 123456
+	    	    Program exited with status 0
+
+	    Reason: correct. myShell can hanle more than one $variable in one argument, and combine them
+	    	    together.
+
+	    (16) Run: set a 124
+	    	      set b 456
+		      ./test_args $a+$b
+
+             Output: 123-456
+	     	     Program exited with status 0
+
+       	     Reason: same as (15) 
+
+	    (17) Run: set a 1
+	    	      set b 2
+		      set ab 3
+		      echo $ab
+
+            Output: 1b
+	    	    Program exited with status 0
+
+	    Reason: correct. Because in README there is NO ANY instructions about how to handle this situation, where
+	    	    one variable name contains another variable's name. I think both the non-greedy and greedy algorithm
+		    to replace the variable are OK. So, in my algorithm, i chose the non-greedy algorithm, which will
+		    search the variable name one character each time after the '$' until we find the matching variable
+		    in myShell local database. In this example, $a was replaced by 1, for the variable a' was set value
+		    1 before. so the output is 1b.
+
+	    (18) Run: export
+
+	    Output: You should provide the var name!
+
+	    Reason: correct. Because the valid input form for command 'export' is: export value
+
+	    (19) Run: export a
+
+	    Output: export success!
+
+	    Reason: correct. Because this input is in valid form and variable a is export to environment at the last
+	    	    line: a=
+		    This is correct, because variable a was not set to any value before. So exporting a into environment
+		    will leave the behind of "a=" blank.
+
+  	    (20) Run: set a hello, world!
+	    	      export a
+		      env
+			
+	    output: There will be one more line at the end of all environment variables:
+
+	    	    	  a=hello, world!
+
+	    Reason: correct. If user doesnot give the command "export a", myShell will not update the environment.
+	    	    After the command 'export', the environment has been undated with new environment variable:
+		    a=hello, world!
+
+	    (21) Run: set a hello
+	    	      inc a
+		      echo $a
+		      
+	    Output: 1
+		    Program exited with status 0
+		    
+	    Reason: correct. Because variable a was set as a word "hello", which in not a number in base 10.
+	    	    In this situation, when executing the 'inc' command, it will first set the variable as the
+		    number 0, and then increase it to 1.
+
+	    (22) Run: set a hello
+	    	      inc a
+		      inc a
+		      echo $a
+		      
+	    Output: 2
+	    	    Program exited with status 0
+		    
+	    Reason: correct. same as (21)
+
+	    (23) Run: inc
+
+	    Output: You should provide the var name!
+
+	    Reason: correct. Because the valid input format for command 'inc' is: inc variable
+
+	    (24) Run: ./test_args a     b   c        d
+
+	    Output: a
+	    	    b
+		    c
+		    d
+
+	    Reason: correct. myShell will ignore the spaces between arguments.
+
+	    (25) Run: ./test_args a \ b \ \ c \ d e
+
+	    Output: a
+ 	    	     b
+		      c
+ 		     d
+		    e
+	    
+	    Reason: correct! When myShell encouters the back-slash space, it will automatically
+	    	    translate it into space in each argument.
+
+	    
+==========================================================================================
+
+
+Section 4: Redirection and Pipes
+
+	(1) Run: ls > a.txt
+
+	Output: Program exited with status 0
+
+	Reason: correct. '>' means the redirection output. right now there will be a new file
+		named "a.txt" in the current directory. In a.txt it stores all the command
+		'ls' output, which is all the file and directory name.
+
+	(2) Run: ls -l > a.txt
+
+	Output: Program exited with status 0
+
+	Reason: same as (1). right now file a.txt store the content of command 'ls -l' output.
+
+	(3) Run: ls > 
+
+	Output:	You should provide the input file!
+		redirection initfile error! 
+
+	Reason: correct. Because this is the invalid input form. User should provide the redirection
+		files.
+
+	(4) Run: cat <
+
+	Output: You should provide the input file!
+		redirection initfile error!
+
+	Reason: same as (3)
+
+	(5) Run: cat < README
+
+	Output: it will display the contents in README
+
+	Reason: correct. '<' means the redirection input. right now README will be redirection to
+		the input of command 'cat'.
+
+	(6) Run: gcc 2>
+
+	Output: You should provide the input file!
+		redirection initfile error!
+
+	Reason: same as (3)
+
+	(7) Run: gcc 2> gcc.txt
+
+	Output:	Program exited with status 1
+
+	Reason: correct. '2>' means the redirection erroutput. right now the system error output information
+		will be redirection to a new file named "gcc.txt". In gcc.txt, it store the following
+		information:
+
+		gcc: fatal error: no input files
+		compilation terminated.
+		
+	(8) Run: ls >> a.txt
+
+	Output:	 /bin/ls: cannot access '>>': No such file or directory
+ 		 /bin/ls: cannot access 'a.txt': No such file or directory
+		 Program exited with status 2
+
+	Reason: correct. no direction symbol like ">>"
+
+	(9) Run: ls | cat
+
+	Output: Program exited with status 0
+		Then, it will also show all the names of files and directories in the current working directorty, same
+		as the result of command 'ls'
+		In the last line, it will print one more exit status:
+		Program exited with status 0
+
+	Reason: correct. program1 is command 'ls', program2 is command 'cat'. '|' is the symbol of pipes.
+		When the program1 exetcute, it will transfer its output to the pipe, and these information
+		will be the input of process2. The ultimate output is the output of process2.
+
+	(10) Run: ls | cat | cat
+
+	Output: Program exited with status 0
+		Program exited with status 0
+		same as (9)
+		Program exited with status 0
+
+	Reason: same as (9)
+
+	(11) Run: ls | cat | cat | cat
+
+	Output: Program exited with status 0
+		Program exited with status 0
+		Program exited with status 0
+		same as (9)
+		Program exited with status 0
+
+	Reason:
+
+	(12) Run: ls | cat | cat | cat | cat
+
+	Output: Program exited with status 0
+	       	Program exited with status 0
+		Program exited with status 0
+		Program exited with status 0
+		same as (9)
+		Program exited with status 0
+
+	Reason: same as (9)
+
+	(13) Run: cat < README | cat | cat > new_readme.txt
+
+	output: Program exited with status 0
+		Program exited with status 0
+		Program exited with status 0
+
+	Reason: correct. it will create a new file called "new_readme.txt", which has the exact same content
+		as README.
+
+	(14) Run: ls -l | cat | sort > sort.txt
+
+	Output: Program exited with status 0
+		Program exited with status 0
+		Program exited with status 0
+
+	Reason: same as (9) it will create a new file named "sort.txt", which holds the out put of command
+		'ls -l'
+
+
+
+
+
